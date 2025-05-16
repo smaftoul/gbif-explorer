@@ -3,6 +3,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vite';
 
 const config = defineConfig({
+    base: "https://smaftoul.github.io/gbif-explorer/",
     plugins: [
         basicSsl(),
         VitePWA(),
