@@ -1,17 +1,29 @@
 <!doctype html>
 <html>
   <head>
-    <meta charset='UTF-8' />
-    <title>react-maplibre Example</title>
-    <link href="https://unpkg.com/maplibre-gl@4.7.0/dist/maplibre-gl.css" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <title>Mobile GBIF Explorer</title>
+    <link
+      href="https://unpkg.com/maplibre-gl@5.5.0/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
     <style>
       body {
         margin: 0;
-        font-family: Helvetica, Arial, sans-serif;
+        padding: 0;
       }
+
       #map {
-        width: 100vw;
-        height: 100vh;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
       }
       .control-panel {
         position: absolute;
@@ -19,7 +31,7 @@
         right: 0;
         max-width: 320px;
         background: #fff;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         padding: 12px 24px;
         margin: 20px;
         font-size: 13px;
@@ -34,7 +46,7 @@
     <div id="map"></div>
   </body>
   <script type="module" type="text/javascript">
-    import {renderToDom} from './src/app.tsx';
-    renderToDom(document.getElementById('map'));
+    import { renderToDom } from "./src/app.tsx";
+    renderToDom(document.getElementById("map"));
   </script>
 </html>
