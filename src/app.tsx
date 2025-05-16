@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {useState, useMemo} from 'react';
-import {createRoot} from 'react-dom/client';
+import { useState, useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
 import {
   Map,
   Marker,
@@ -14,7 +14,7 @@ import {
 import ControlPanel from './control-panel';
 import Pin from './pin';
 
-import CITIES from '../../../.data/cities.json';
+import CITIES from '../cities.json';
 
 export default function App() {
   const [popupInfo, setPopupInfo] = useState(null);
