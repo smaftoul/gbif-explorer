@@ -44,6 +44,37 @@ function getColor(kingdom: string) {
   }
 }
 
+export async function getWikidataImages(taxonId: number) {
+  const url = `https://query.wikidata.org/sparql?query=`
+    + `SELECT ?item ?itemLabel ?image WHERE { `
+    + `  ?item wdt:P846 "${taxonId}" . `
+    + `  OPTIONAL { ?item wdt:P18 ?image } `
+    + `  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". } `
+    + `}`;
+  const headers = {
+    'Accept': 'application/json',
+  };
+  const response = await fetch(url, { headers });
+  if (!response.ok) {
+    console.error(`Wikidata API error: ${response.status} ${response.statusText}`);
+    return null;
+  }
+  const data = await response.json();
+  const items = data.results.bindings;
+  if (items.length === 0) {
+    console.log(`No images found for taxon ID ${taxonId}`);
+    return null;
+  }
+  const images = items.map((item: any) => {
+    return {
+      label: item.itemLabel.value,
+      image: item.image ? item.image.value : null,
+    };
+  });
+  return images;
+}
+
+
 export async function getLocalizedNameFromGBIF(taxtonId: number) {
   const localStorageKey = `localizedName-${taxtonId}`;
 
@@ -111,8 +142,11 @@ export default function App() {
   const [bounds, setBounds] = useState<any>([]);
   const [cells, setCells] = useState<any>([]);
   const [popupInfo, setPopupInfo] = useState(null);
-  const [localizedName, setLocalizedName] = useState<string | null>(null);
   const [observations, setObservations] = useState([])
+  const [localizedName, setLocalizedName] = useState<string | null>(null);
+  const [speciesImage, setSpeciesImage] = useState([])
+  const [isLoadingImages, setIsLoadingImages] = useState<boolean>(false);
+
 
 
   useEffect(() => {
@@ -251,11 +285,25 @@ export default function App() {
 
   useEffect(() => {
     if (popupInfo && popupInfo.taxonKey) {
+      // Set loading state to true when fetching new images
+      setIsLoadingImages(true);
+      setLocalizedName(null); // Clear previous localized name
+      setSpeciesImage([]); // Clear previous images
+
       getLocalizedNameFromGBIF(popupInfo.taxonKey).then(name => {
         setLocalizedName(name);
       }).catch(error => {
         console.error("Error fetching localized name:", error);
         setLocalizedName(null);
+      });
+
+      getWikidataImages(popupInfo.taxonKey).then(images => {
+        setSpeciesImage(images);
+        setIsLoadingImages(false); // Set loading state to false when images are loaded
+      }).catch(error => {
+        console.error("Error fetching species images:", error);
+        setSpeciesImage([]);
+        setIsLoadingImages(false); // Set loading state to false on error
       });
     }
   }, [popupInfo]);
@@ -326,6 +374,17 @@ export default function App() {
               <h3>{localizedName}</h3>
               <p><strong>Scientific Name:</strong> {popupInfo.scientificName}</p>
               <p><strong>Year:</strong> {new Date(popupInfo.eventDate).getFullYear()}</p>
+              {isLoadingImages ? (
+                <p>Loading images...</p> // Show loading indicator
+              ) : (
+                speciesImage.length > 0 && (
+                  <div>
+                    {speciesImage.map((image, index) => (
+                      <img key={index} src={image.image} alt={image.label} style={{ width: '100%', height: '100%' }} />
+                    ))}
+                  </div>
+                )
+              )}
             </div>
           </Popup>
         )}
