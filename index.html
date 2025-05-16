@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <title>Mobile GBIF Explorer</title>
+    <link
+      href="https://unpkg.com/maplibre-gl@5.5.0/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+      .control-panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        max-width: 320px;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        padding: 12px 24px;
+        margin: 20px;
+        font-size: 13px;
+        line-height: 2;
+        color: #6b6b76;
+        text-transform: uppercase;
+        outline: none;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-BNlxZhlf.js"></script>
+  <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
+  <body>
+    <div id="map"></div>
+  </body>
+</html>
