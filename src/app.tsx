@@ -50,7 +50,7 @@ export default function App() {
           bearing: 0,
           pitch: 0
         }}
-        mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+        mapStyle="/gbif-natural-style.json"
       >
         <GeolocateControl position="top-left" />
         <FullscreenControl position="top-left" />
