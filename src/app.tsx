@@ -298,6 +298,13 @@ export default function App() {
       });
 
       getWikidataImages(popupInfo.taxonKey).then(images => {
+        // rewrite urls to use https
+        images = images.map((image) => {
+          if (image.image && image.image.startsWith("http://")) {
+            image.image = image.image.replace("http://", "https://");
+          }
+          return image;
+        });
         setSpeciesImage(images);
         setIsLoadingImages(false); // Set loading state to false when images are loaded
       }).catch(error => {
@@ -375,12 +382,12 @@ export default function App() {
               <p><strong>Scientific Name:</strong> {popupInfo.scientificName}</p>
               <p><strong>Year:</strong> {new Date(popupInfo.eventDate).getFullYear()}</p>
               {isLoadingImages ? (
-                <p>Loading images...</p> // Show loading indicator
+                <p>Loading images...</p>
               ) : (
-                speciesImage.length > 0 && (
+                speciesImage != null && speciesImage.length > 0 && (
                   <div>
                     {speciesImage.map((image, index) => (
-                      <img key={index} src={image.image} alt={image.label} style={{ width: '100%', height: '100%' }} />
+                      <img key={index} src={image.image} alt={image.label} style={{ width: '100%', height: 'auto' }} />
                     ))}
                   </div>
                 )
