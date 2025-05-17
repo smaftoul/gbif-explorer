@@ -6,18 +6,13 @@ import {
   Marker,
   Popup,
   NavigationControl,
-  FullscreenControl,
-  ScaleControl,
   GeolocateControl,
   MapRef,
   ViewState,
 } from 'react-map-gl/maplibre';
 import { polygonToCellsExperimental, POLYGON_TO_CELLS_FLAGS, cellsToMultiPolygon } from 'h3-js';
 
-import ControlPanel from './control-panel';
-
 const GBIF_API_BASE_URL = 'https://api.gbif.org/v1';
-
 
 export interface Occurrence {
   key: number;
@@ -245,7 +240,7 @@ export default function App() {
 
   const obs = useMemo(() => {
     const allOccurrences = [];
-    cells.forEach((cellname) => {
+    cells.forEach((cellname: string) => {
       console.log("cellname", cellname);
       const cellData = localStorage.getItem(cellname);
       if (!cellData) {
@@ -363,10 +358,8 @@ export default function App() {
         }}
         ref={mapRef}
       >
-        <GeolocateControl position="top-left" fitBoundsOptions={{ maxZoom: 17 }} />
-        <FullscreenControl position="top-left" />
+        <GeolocateControl position="top-left" fitBoundsOptions={{ maxZoom: 17 }} trackUserLocation={true} />
         <NavigationControl position="top-left" />
-        <ScaleControl />
 
         {obs}
 
@@ -386,7 +379,7 @@ export default function App() {
               ) : (
                 speciesImage != null && speciesImage.length > 0 && (
                   <div>
-                    {speciesImage.map((image, index) => (
+                    {speciesImage.map((image, index: number) => (
                       <img key={index} src={image.image} alt={image.label} style={{ width: '100%', height: 'auto' }} />
                     ))}
                   </div>
@@ -396,8 +389,6 @@ export default function App() {
           </Popup>
         )}
       </Map>
-
-      <ControlPanel bounds={cells} />
     </>
   );
 }
