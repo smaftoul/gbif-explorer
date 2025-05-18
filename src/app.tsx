@@ -154,7 +154,13 @@ export default function App() {
       console.debug("acquired location:", newUserPos)
     }, (err) => {
       console.log(err);
-    },);
+    },
+      // android requires this to work
+      {
+        enableHighAccuracy: false,
+        timeout: 5000
+      }
+    );
   }, [])
 
   useEffect(() => {
