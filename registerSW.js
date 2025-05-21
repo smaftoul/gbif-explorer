@@ -1,1 +1,1 @@
-if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('https://smaftoul.github.io/gbif-explorer/sw.js', { scope: 'https://smaftoul.github.io/gbif-explorer/' })})}
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/gbif-explorer/sw.js', { scope: '/gbif-explorer/' })})}
