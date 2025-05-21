@@ -196,12 +196,12 @@ export default function App() {
   }, [bounds]);
 
   useEffect(() => {
-    if (cells.length > 3) {
-      console.log("more than 3 cells", cells);
+    if (cells.length > 10) {
+      console.log("more than 10 cells", cells);
       setObservations(cells);
       return;
     }
-    cells.forEach(async (cell) => {
+    const promises = cells.map(async (cell: string) => {
       const storedCell = localStorage.getItem(cell);
       const cellItem = JSON.parse(localStorage.getItem(storedCell) || '{"lastUpdated": "1970-01-01", "occurrences": []}');
 
@@ -215,7 +215,6 @@ export default function App() {
       const wkt = `POLYGON((${coords.map((coord) => coord.join(' ')).join(', ')}))`
 
       if (cellItem.lastUpdated === formatedDateEnd) {
-        //localStorage.setItem(cell, storedCell);
         console.log("cell", cell, "already up to date");
         return;
       }
@@ -241,9 +240,10 @@ export default function App() {
       });
 
       localStorage.setItem(cell, JSON.stringify({ lastUpdated: formatedDateEnd, occurences: Array.from(cellOccurrencesSet) }));
-      setObservations(cells);
       console.log("cell", cell, "occurrences count", occurrences.length, "wkt", wkt);
     });
+    Promise.all(promises);
+    setObservations(cells);
   }, [cells]);
 
   const obs = useMemo(() => {
