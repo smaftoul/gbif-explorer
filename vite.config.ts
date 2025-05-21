@@ -29,6 +29,9 @@ const config = defineConfig({
             manifestFilename: 'manifest.json',
         }),
     ],
+    build: {
+        sourcemap: true,
+    },
     server: {
         allowedHosts: true,
     },
