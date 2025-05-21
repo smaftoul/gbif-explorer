@@ -348,7 +348,7 @@ export default function App() {
 
   return (
     <>
-      <pwa-install icon="/favicon.svg"></pwa-install>
+      <pwa-install icon={`${import.meta.env.BASE_URL}favicon.svg`}></pwa-install>
       <Map
         initialViewState={{
           latitude: userPos.lat,
