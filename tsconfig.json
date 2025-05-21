@@ -4,8 +4,12 @@
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
     "module": "ES2020",
-    "sourceMap": true
+    "sourceMap": true,
+    "types": [
+      "dom-chromium-installation-events",
+      "web-app-manifest"
+    ]
   }
 }

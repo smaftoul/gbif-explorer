@@ -1,3 +1,4 @@
+import '@khmyznikov/pwa-install';
 import * as React from 'react';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -11,6 +12,8 @@ import {
   ViewState,
 } from 'react-map-gl/maplibre';
 import { polygonToCellsExperimental, POLYGON_TO_CELLS_FLAGS, cellsToMultiPolygon } from 'h3-js';
+import '@khmyznikov/pwa-install';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 const GBIF_API_BASE_URL = 'https://api.gbif.org/v1';
 
@@ -346,6 +349,7 @@ export default function App() {
 
   return (
     <>
+      <pwa-install icon="/favicon.svg"></pwa-install>
       <Map
         initialViewState={{
           latitude: userPos.lat,
