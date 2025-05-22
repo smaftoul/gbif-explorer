@@ -43,36 +43,55 @@ function getColor(kingdom: string) {
   }
 }
 
-export async function getWikidataImages(taxonId: number) {
+export async function getWikidataMedia(taxonId: number) {
   const url = `https://query.wikidata.org/sparql?query=`
-    + `SELECT ?item ?itemLabel ?image WHERE { `
-    + `  ?item wdt:P846 "${taxonId}" . `
-    + `  OPTIONAL { ?item wdt:P18 ?image } `
-    + `  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". } `
-    + `}`;
-  const headers = {
-    'Accept': 'application/json',
-  };
+    + `SELECT ?mediaUrl ?mediaType WHERE {`
+    + `  {`
+    + `    ?item wdt:P846 "${taxonId}".`
+    + `    ?item wdt:P18 ?mediaUrl.`
+    + `    BIND("image" AS ?mediaType)`
+    + `  }`
+    + `  UNION`
+    + `  {`
+    + `    ?item wdt:P846 "${taxonId}".`
+    + `    ?item wdt:P51 ?mediaUrl.`
+    + `    BIND("audio" AS ?mediaType)`
+    + `  }`
+    + `  UNION`
+    + `  {`
+    + `    ?item wdt:P846 "${taxonId}".`
+    + `    ?item wdt:P10 ?mediaUrl.`
+    + `    BIND("video" AS ?mediaType)`
+    + `  }`
+    + `}`
+
+  console.log(`Querying Wikidata API for taxon ID ${taxonId} `);
+  const headers = { 'Accept': 'application/sparql-results+json' };
   const response = await fetch(url, { headers });
   if (!response.ok) {
-    console.error(`Wikidata API error: ${response.status} ${response.statusText}`);
+    console.error(`Wikidata API error: ${response.status} ${response.statusText} `);
     return null;
   }
   const data = await response.json();
+  console.log("data", data);
   const items = data.results.bindings;
   if (items.length === 0) {
-    console.log(`No images found for taxon ID ${taxonId}`);
+    console.log(`No media found for taxon ID ${taxonId} `);
     return null;
   }
-  const images = items.map((item: any) => {
+
+  const media = items.map((item: any) => {
+    if (item.mediaUrl && item.mediaUrl.value.startsWith("http://")) {
+      item.mediaUrl.value = item.mediaUrl.value.replace("http://", "https://");
+    }
     return {
-      label: item.itemLabel.value,
-      image: item.image ? item.image.value : null,
+      url: item.mediaUrl.value,
+      type: item.mediaType.value,
     };
   });
-  return images;
+  console.log("media", media);
+  return media;
 }
-
 
 export async function getLocalizedNameFromGBIF(taxtonId: number) {
   const localStorageKey = `localizedName-${taxtonId}`;
@@ -143,10 +162,8 @@ export default function App() {
   const [popupInfo, setPopupInfo] = useState(null);
   const [observations, setObservations] = useState([])
   const [localizedName, setLocalizedName] = useState<string | null>(null);
-  const [speciesImage, setSpeciesImage] = useState([])
+  const [speciesMedia, setSpeciesMedia] = useState([])
   const [isLoadingImages, setIsLoadingImages] = useState<boolean>(false);
-
-
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -293,7 +310,7 @@ export default function App() {
       // Set loading state to true when fetching new images
       setIsLoadingImages(true);
       setLocalizedName(null); // Clear previous localized name
-      setSpeciesImage([]); // Clear previous images
+      setSpeciesMedia([]); // Clear previous images
 
       getLocalizedNameFromGBIF(popupInfo.taxonKey).then(name => {
         setLocalizedName(name);
@@ -302,19 +319,33 @@ export default function App() {
         setLocalizedName(null);
       });
 
-      getWikidataImages(popupInfo.taxonKey).then(images => {
-        // rewrite urls to use https
-        images = images.map((image) => {
-          if (image.image && image.image.startsWith("http://")) {
-            image.image = image.image.replace("http://", "https://");
-          }
-          return image;
-        });
-        setSpeciesImage(images);
+      getWikidataMedia(popupInfo.taxonKey).then(media => {
+        if (media) {
+          media = media.map((item) => {
+            function ensureHttps(url: string | null): string | null {
+              if (url && url.startsWith("http://")) {
+                return url.replace("http://", "https://");
+              }
+              return url;
+            }
+
+            item.image = ensureHttps(item.image);
+            item.audio = ensureHttps(item.audio);
+            item.video = ensureHttps(item.video);
+            return item;
+          });
+          // sort media by type in the order of image, audio, video
+          media.sort((a, b) => {
+            const order = ['image', 'audio', 'video'];
+            return order.indexOf(a.type) - order.indexOf(b.type);
+          });
+
+        }
+        setSpeciesMedia(media);
         setIsLoadingImages(false); // Set loading state to false when images are loaded
       }).catch(error => {
         console.error("Error fetching species images:", error);
-        setSpeciesImage([]);
+        setSpeciesMedia([]);
         setIsLoadingImages(false); // Set loading state to false on error
       });
     }
@@ -388,11 +419,38 @@ export default function App() {
               {isLoadingImages ? (
                 <p>Loading images...</p>
               ) : (
-                speciesImage != null && speciesImage.length > 0 && (
+                speciesMedia != null && speciesMedia.length > 0 && (
                   <div>
-                    {speciesImage.map((image, index: number) => (
-                      <img key={index} src={image.image} alt={image.label} style={{ width: '100%', height: 'auto' }} />
-                    ))}
+                    {speciesMedia.map((media, index: number) => {
+                      console.log("media", media);
+                      const audioElement = document.createElement('audio');
+                      const videoElement = document.createElement('video');
+                      if (media.type == 'image') {
+                        return (
+                          <img
+                            key={index}
+                            src={media.url}
+                            alt={media.label}
+                            style={{ width: '100%', height: 'auto' }}
+                          />
+                        );
+                      }
+                      if (media.type == 'audio' && audioElement.canPlayType('audio/ogg')) {
+                        return (
+                          <audio key={index} style={{ width: '100%', height: 'auto' }} controls>
+                            <source src={media.url} type="audio/ogg" />
+                          </audio>
+                        );
+                      }
+                      if (media.type == 'video' && videoElement.canPlayType('audio/webm')) {
+                        return (
+                          <video key={index} style={{ width: '100%', height: 'auto' }} controls>
+                            <source src={media.url} type="video/webm" />
+                          </video>
+                        );
+                      }
+                      return null;
+                    })}
                   </div>
                 )
               )}
