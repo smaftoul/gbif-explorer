@@ -9,9 +9,9 @@ const config = defineConfig({
         VitePWA({
             includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg'],
             manifest: {
-                name: 'My Awesome App',
-                short_name: 'MyApp',
-                description: 'My Awesome App description',
+                name: 'GBIF Explorer',
+                short_name: 'GBIF Explorer',
+                description: 'Explore the nature around you',
                 theme_color: '#ffffff',
                 icons: [
                     {
