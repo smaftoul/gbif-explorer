@@ -321,7 +321,7 @@ export default function App() {
 
       getWikidataMedia(popupInfo.taxonKey).then(media => {
         if (media) {
-          media = media.map((item) => {
+          media = media.map((item: any) => {
             function ensureHttps(url: string | null): string | null {
               if (url && url.startsWith("http://")) {
                 return url.replace("http://", "https://");
@@ -335,7 +335,7 @@ export default function App() {
             return item;
           });
           // sort media by type in the order of image, audio, video
-          media.sort((a, b) => {
+          media.sort((a: any, b: any) => {
             const order = ['image', 'audio', 'video'];
             return order.indexOf(a.type) - order.indexOf(b.type);
           });
@@ -355,30 +355,6 @@ export default function App() {
     return <div>Waiting for user location...</div>;
   }
 
-  const mapStyle = {
-    "version": 8,
-    "sources": {
-      "gbif-natural": {
-        "type": "raster",
-        "tiles": [
-          "https://tile.gbif.org/3857/omt/{z}/{x}/{y}@1x.png"
-        ],
-        "tileSize": 256,
-        "attribution": "© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap contributors</a>, <a href=\"https://www.gbif.org\">GBIF</a>"
-      }
-    },
-    "layers": [
-      {
-        "id": "gbif-natural-layer",
-        "type": "raster",
-        "source": "gbif-natural",
-        "paint": {
-          "raster-opacity": 1
-        }
-      }
-    ]
-  };
-
   return (
     <>
       <pwa-install icon={`${import.meta.env.BASE_URL}favicon.svg`}></pwa-install>
@@ -391,7 +367,7 @@ export default function App() {
           bearing: 0,
           pitch: 0
         }}
-        mapStyle={mapStyle}
+        mapStyle="https://tiles.openfreemap.org/styles/liberty"
         onLoad={() => {
           setMapLoaded(true);
         }}
@@ -462,6 +438,6 @@ export default function App() {
   );
 }
 
-export function renderToDom(container) {
+export function renderToDom(container: any) {
   createRoot(container).render(<App />);
 }
