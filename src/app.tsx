@@ -316,8 +316,8 @@ export default function App() {
         key={`marker-${occurrence.key}`}
         longitude={occurrence.decimalLongitude}
         latitude={occurrence.decimalLatitude}
-        color={getColor(occurrence.kingdom)
-        }
+        color={getColor(occurrence.kingdom)}
+        style={{ zIndex: 1 }}
         anchor="bottom"
         onClick={e => {
           // If we let the click event propagates to the map, it will immediately close the popup
