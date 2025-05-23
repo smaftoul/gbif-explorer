@@ -418,6 +418,7 @@ export default function App() {
             longitude={Number(popupInfo.longitude)}
             latitude={Number(popupInfo.latitude)}
             onClose={() => setPopupInfo(null)}
+            style={{ zIndex: 2 }}
           >
             <div>
               <h3>{localizedName}</h3>
