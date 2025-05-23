@@ -93,6 +93,29 @@ export async function getWikidataMedia(taxonId: number) {
   return media;
 }
 
+export async function getConservationStatus(taxonId: number) {
+  const url = `https://api.gbif.org/v1/species/${taxonId}/iucnRedListCategory`;
+  console.log(`Querying GBIF API for conservation status of taxon ${taxonId} `);
+  const response = await fetch(url);
+  if (!response.ok) {
+    console.error(`GBIF API error: ${response.status} ${response.statusText}`);
+    return null;
+  }
+  // response can be 204 No Content
+  if (response.status === 204) {
+    console.log(`No conservation status found for taxon ID ${taxonId} `);
+    return null;
+  }
+  const data = await response.json();
+  const status = data.category;
+  // if status is Least Concern (LC) , Data Deficient (DD) or Not Evaluated (NE), Not Applicable (NA) return null
+  if (status === 'LEAST_CONCERN' || status === 'DATA_DEFICIENT' || status === 'NOT_EVALUATED' || status === 'NOT_APPLICABLE') {
+    console.log(`Conservation status for taxon ID ${taxonId} is not applicable `);
+    return null;
+  }
+  return status;
+}
+
 export async function getLocalizedNameFromGBIF(taxtonId: number) {
   const localStorageKey = `localizedName-${taxtonId}`;
 
@@ -162,8 +185,9 @@ export default function App() {
   const [popupInfo, setPopupInfo] = useState(null);
   const [observations, setObservations] = useState([])
   const [localizedName, setLocalizedName] = useState<string | null>(null);
+  const [conservationStatus, setConservationStatus] = useState<string | null>(null);
   const [speciesMedia, setSpeciesMedia] = useState([])
-  const [isLoadingImages, setIsLoadingImages] = useState<boolean>(false);
+  const [isLoadingMedia, setIsLoadingMedia] = useState<boolean>(false);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -308,7 +332,7 @@ export default function App() {
   useEffect(() => {
     if (popupInfo && popupInfo.taxonKey) {
       // Set loading state to true when fetching new images
-      setIsLoadingImages(true);
+      setIsLoadingMedia(true);
       setLocalizedName(null); // Clear previous localized name
       setSpeciesMedia([]); // Clear previous images
 
@@ -317,6 +341,13 @@ export default function App() {
       }).catch(error => {
         console.error("Error fetching localized name:", error);
         setLocalizedName(null);
+      });
+
+      getConservationStatus(popupInfo.taxonKey).then(status => {
+        setConservationStatus(status);
+      }).catch(error => {
+        console.error("Error fetching conservation status:", error);
+        setConservationStatus(null);
       });
 
       getWikidataMedia(popupInfo.taxonKey).then(media => {
@@ -342,11 +373,11 @@ export default function App() {
 
         }
         setSpeciesMedia(media);
-        setIsLoadingImages(false); // Set loading state to false when images are loaded
+        setIsLoadingMedia(false); // Set loading state to false when images are loaded
       }).catch(error => {
         console.error("Error fetching species images:", error);
         setSpeciesMedia([]);
-        setIsLoadingImages(false); // Set loading state to false on error
+        setIsLoadingMedia(false); // Set loading state to false on error
       });
     }
   }, [popupInfo]);
@@ -390,9 +421,12 @@ export default function App() {
           >
             <div>
               <h3>{localizedName}</h3>
+              {conservationStatus != null && (
+                <p style={{ color: "red" }}><strong >Conservation status:</strong> {conservationStatus}</p>
+              )}
               <p><strong>Scientific Name:</strong> {popupInfo.scientificName}</p>
               <p><strong>Year:</strong> {new Date(popupInfo.eventDate).getFullYear()}</p>
-              {isLoadingImages ? (
+              {isLoadingMedia ? (
                 <p>Loading images...</p>
               ) : (
                 speciesMedia != null && speciesMedia.length > 0 && (
