@@ -15,6 +15,8 @@ import {
 import { polygonToCellsExperimental, POLYGON_TO_CELLS_FLAGS, cellsToMultiPolygon } from 'h3-js';
 import '@khmyznikov/pwa-install';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { useGeolocation } from "@uidotdev/usehooks";
+import ExplanationModal from './ExplanationModal';
 
 const GBIF_API_BASE_URL = 'https://api.gbif.org/v1';
 
@@ -177,7 +179,6 @@ const fetchOccurrences = async (
 
 export default function App() {
   const mapRef = useRef<MapRef | undefined>(undefined);
-  const [userPos, setUserPos] = useState({ lat: null, long: null })
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
   const [mapMoved, setMapMoved] = useState<ViewState | undefined>(undefined);
   const [bounds, setBounds] = useState<any>([]);
@@ -188,25 +189,6 @@ export default function App() {
   const [conservationStatus, setConservationStatus] = useState<string | null>(null);
   const [speciesMedia, setSpeciesMedia] = useState([])
   const [isLoadingMedia, setIsLoadingMedia] = useState<boolean>(false);
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const newUserPos = {
-        lat: pos.coords.latitude,
-        long: pos.coords.longitude,
-      };
-      setUserPos(newUserPos)
-      console.debug("acquired location:", newUserPos)
-    }, (err) => {
-      console.log(err);
-    },
-      // android requires this to work
-      {
-        enableHighAccuracy: false,
-        timeout: 5000
-      }
-    );
-  }, [])
 
   useEffect(() => {
     if (mapLoaded) {
@@ -382,17 +364,22 @@ export default function App() {
     }
   }, [popupInfo]);
 
-  if (userPos.lat === null || userPos.long === null) {
-    return <div>Waiting for user location...</div>;
-  }
+  const position = useGeolocation();
+  if (!position || !position.latitude || !position.longitude) {
+    return (
+      <div className="geolocation-dialog">
+        <ExplanationModal />
+      </div>
+    );
+  };
 
   return (
     <>
       <pwa-install icon={`${import.meta.env.BASE_URL}favicon.svg`}></pwa-install>
       <Map
         initialViewState={{
-          latitude: userPos.lat,
-          longitude: userPos.long,
+          latitude: position.latitude,
+          longitude: position.longitude,
           zoom: 17,
           minZoom: 12,
           bearing: 0,
